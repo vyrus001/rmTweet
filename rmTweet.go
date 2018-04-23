@@ -23,7 +23,7 @@ var (
 )
 
 var days int
-var likes, tweets, retweets bool
+var likes, tweets, retweets, test bool
 var now = time.Now().Format("20060102150405")
 var logDir = "./log/"
 
@@ -56,10 +56,12 @@ func remove(api *anaconda.TwitterApi, object string) {
 			for _, tweet := range tweets {
 				tweetTime, _ := tweet.CreatedAtTime()
 				if tweetTime.Before(time.Now().AddDate(0, 0, days)) {
-					if object == "tweets" {
-						_, err = api.DeleteTweet(tweet.Id, true)
-					} else if object == "likes" {
-						_, err = api.Unfavorite(tweet.Id)
+					if !test {
+						if object == "tweets" {
+							_, err = api.DeleteTweet(tweet.Id, true)
+						} else if object == "likes" {
+							_, err = api.Unfavorite(tweet.Id)
+						}
 					}
 					if err != nil {
 						log.Printf("[ERROR] Could not delete: %v - %v: %v \n", tweet.Id, tweet.CreatedAt, tweet.Text)
@@ -113,6 +115,7 @@ func handleFlags() {
 	flag.BoolVar(&tweets, "tweets", false, "This will delete past tweets")
 	flag.BoolVar(&retweets, "retweets", false, "This will un-retweet past tweets (must use along with -tweets option)")
 	flag.BoolVar(&likes, "likes", false, "This will unlike past tweets")
+	flag.BoolVar(&test, "test", false, "This will prevent any actual changes from occurring")
 	flag.IntVar(&days, "days", 0, "Only affect tweets created before n day(s) ago (Default 0)")
 	flag.Parse()
 }
